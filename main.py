@@ -7,6 +7,10 @@ class Point:
         self.__y = y
 
     @property
+    def xy(self):
+        return (self.__x, self.__y)
+
+    @property
     def x(self):
         return self.__x
 
@@ -25,17 +29,17 @@ class Point:
 
 
 class Figure:
-    def __init__(self, points):
+    def __init__(self, pts):
         self.__product = None
         self.__l = None
         self.__v1 = None
         self.__v2 = None
-        self._pts = points
+        self._pts = pts
         self.__area = self._update_area()
 
-    def _update_area(self):
-        print("Figure::update_area")
-        pass
+    # def _update_area(self):
+    #     print("Figure::update_area")
+    #     pass
 
     @property
     def area(self):
@@ -86,14 +90,17 @@ class Triangle(Figure):
 class Quadrilateral(Figure):
 
     def _update_area(self):
-        return 1 / 2 * abs(self._pts[0].x * self._pts[1].y
-                           + self._pts[1].x * self._pts[2].y
-                           + self._pts[2].x * self._pts[3].y
-                           + self._pts[3].x * self._pts[0].y
-                           - self._pts[1].x * self._pts[0].y
-                           - self._pts[2].x * self._pts[1].y
-                           - self._pts[3].x * self._pts[2].y
-                           - self._pts[0].x * self._pts[3].y)
+        # return 1 / 2 * abs(self._pts[0].x * self._pts[1].y
+        #                    + self._pts[1].x * self._pts[2].y
+        #                    + self._pts[2].x * self._pts[3].y
+        #                    + self._pts[3].x * self._pts[0].y
+        #                    - self._pts[1].x * self._pts[0].y
+        #                    - self._pts[2].x * self._pts[1].y
+        #                    - self._pts[3].x * self._pts[2].y
+        #                    - self._pts[0].x * self._pts[3].y)
+        self.__temp1 = Triangle([self._pts[0], self._pts[1], self._pts[2]])
+        self.__temp2 = Triangle([self._pts[3], self._pts[1], self._pts[2]])
+        return self.__temp1.area + self.__temp2.area
 
     def __str__(self):
         return f"[{self._pts[0]}; {self._pts[1]}; {self._pts[2]}; {self._pts[3]}]"
@@ -115,19 +122,18 @@ s = (re.sub('\W+', ' ', s)).split()
 points = []
 for i in range(0, len(s), 2):
     points.append(Point(int(s[i]), int(s[i + 1])))
-
 triangles = []
 
 for i in range(len(points) - 2):
     for j in range(i, len(points) - 1):
         for k in range(j, len(points)):
             t = Triangle((points[i], points[j], points[k]))
-            if t.is_convex():
+            if t.area != 0:
                 triangles.append(t)
 
 triangles = sorted(triangles)
 
-print(f"triangle with largest area: {triangles[0]} triangle with smallest area: {triangles[len(triangles) - 1]}")
+print(f"triangle with largest area: {triangles[len(triangles) - 1]}, {triangles[len(triangles) - 1].area}")
 
 quadrilaterals = []
 
@@ -135,8 +141,15 @@ for i in range(len(points) - 3):
     for j in range(i, len(points) - 2):
         for k in range(j, len(points) - 1):
             for m in range(k, len(points)):
-                f = Quadrilateral((points[i], points[j], points[k], points[m]))
-                if f.is_convex():
-                    quadrilaterals.append(f)
+                temp1 = Triangle([points[i], points[j], points[k]])
+                temp2 = Triangle([points[j], points[k], points[m]])
+                if (points[i] != points[j] and points[i] != points[k] and points[i] != points[m]
+                        and points[j] != points[k] and points[j] != points[m]
+                        and points[k] != points[m]):
+                    if temp1.area != 0 and temp2.area != 0:
+                        f = Quadrilateral((points[i], points[j], points[k], points[m]))
+                        quadrilaterals.append(f)
 
-print(f"quadrilateral with largest area: {quadrilaterals[0]} quadrilateral with smallest area: {quadrilaterals[len(quadrilaterals) - 1]}")
+quadrilaterals = sorted(quadrilaterals)
+
+print(f"quadrilateral with largest area: {quadrilaterals[len(quadrilaterals) - 1]} {quadrilaterals[len(quadrilaterals) - 1].area}")
